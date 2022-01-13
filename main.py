@@ -3,7 +3,8 @@ Implementation of "Automatic multiplanar CT reformatting from trans-axial into l
 Marta Nun~ez-Garcia et al. STACOM 2020
 
 Given a raw trans-axial CT image & corresponding LV endo, LV wall and RV epi segmentations (.mha or .vtk), compute
-LV short axis view. It also reformats the masks.
+LV short axis view.
+!!!!  IMPORTANT: do not reformat directly the masks here, use 'reformat_masks_to_SAX.py'  !!!!
 
 Get meshes from masks and use them to find the transformation that aligns:
 # 1. MV plane
@@ -158,65 +159,65 @@ im_sax.SetMetaData('StudyDescription', 'sax')
 im_sax.SetMetaData('SeriesDescription', 'image')
 sitk.WriteImage(im_sax, ofilename_ct, True)
 
-# Resample input masks
-lvendo_im = sitk.ReadImage(ifilename_lvendo)
-rv_im = sitk.ReadImage(ifilename_rvepi)
-lvwall_im = sitk.ReadImage(ifilename_lvwall)
-
-if keep_physical_location:
-    mask_lvendo_sax = get_sax_view(im=lvendo_im, reference_image=reference_image, reference_origin=reference_image.GetOrigin(),
-                          reference_center=reference_center, R=R, default_pixel_value=0.0)
-    mask_rv_sax = get_sax_view(im=rv_im, reference_image=reference_image, reference_origin=reference_image.GetOrigin(),
-                          reference_center=reference_center, R=R, default_pixel_value=0.0)
-    mask_lvwall_sax = get_sax_view(im=lvwall_im, reference_image=reference_image, reference_origin=reference_image.GetOrigin(),
-                          reference_center=reference_center, R=R, default_pixel_value=0.0)
-else:
-    mask_lvendo_sax = get_sax_view(im=lvendo_im, reference_image=reference_image, reference_origin=sax_origin,
-                             reference_center=reference_center, R=R, default_pixel_value=0.0)
-    mask_rv_sax = get_sax_view(im=rv_im, reference_image=reference_image, reference_origin=sax_origin,
-                             reference_center=reference_center, R=R, default_pixel_value=0.0)
-    mask_lvwall_sax = get_sax_view(im=lvwall_im, reference_image=reference_image, reference_origin=sax_origin,
-                             reference_center=reference_center, R=R, default_pixel_value=0.0)
-
-mask_lvendo_sax = sitk.Cast(mask_lvendo_sax, sitk.sitkUInt8)
-mask_rv_sax = sitk.Cast(mask_rv_sax, sitk.sitkUInt8)
-mask_wall_sax = sitk.Cast(mask_lvwall_sax, sitk.sitkUInt8)
-
-# add metadata and write output results
-try:
-    mask_lvendo_sax.SetMetaData('PatientName', im.GetMetaData('0010|0010'))
-except:
-    pass
-try:
-    mask_lvendo_sax.SetMetaData('PatientID', im.GetMetaData('0010|0020'))
-except:
-    pass
-mask_lvendo_sax.SetMetaData('StudyDescription', 'sax')
-mask_lvendo_sax.SetMetaData('SeriesDescription', 'lvendo')
-sitk.WriteImage(mask_lvendo_sax, ofilename_lvendo, True)
-
-try:
-    mask_rv_sax.SetMetaData('PatientName',  im.GetMetaData('0010|0010'))
-except:
-    pass
-try:
-    mask_rv_sax.SetMetaData('PatientID',  im.GetMetaData('0010|0020'))
-except:
-    pass
-mask_rv_sax.SetMetaData('PatientName', 'sax')
-mask_rv_sax.SetMetaData('SeriesDescription', 'rvepi')
-sitk.WriteImage(mask_rv_sax, ofilename_rvepi, True)
-
-try:
-    mask_wall_sax.SetMetaData('PatientName',  im.GetMetaData('0010|0010'))
-except:
-    pass
-try:
-    mask_wall_sax.SetMetaData('PatientID',  im.GetMetaData('0010|0020'))
-except:
-    pass
-mask_wall_sax.SetMetaData('StudyDescription', 'sax')
-mask_wall_sax.SetMetaData('SeriesDescription', 'lvwall')
-sitk.WriteImage(mask_wall_sax, ofilename_lvwall, True)
+# # Resample input masks
+# lvendo_im = sitk.ReadImage(ifilename_lvendo)
+# rv_im = sitk.ReadImage(ifilename_rvepi)
+# lvwall_im = sitk.ReadImage(ifilename_lvwall)
+#
+# if keep_physical_location:
+#     mask_lvendo_sax = get_sax_view(im=lvendo_im, reference_image=reference_image, reference_origin=reference_image.GetOrigin(),
+#                           reference_center=reference_center, R=R, default_pixel_value=0.0)
+#     mask_rv_sax = get_sax_view(im=rv_im, reference_image=reference_image, reference_origin=reference_image.GetOrigin(),
+#                           reference_center=reference_center, R=R, default_pixel_value=0.0)
+#     mask_lvwall_sax = get_sax_view(im=lvwall_im, reference_image=reference_image, reference_origin=reference_image.GetOrigin(),
+#                           reference_center=reference_center, R=R, default_pixel_value=0.0)
+# else:
+#     mask_lvendo_sax = get_sax_view(im=lvendo_im, reference_image=reference_image, reference_origin=sax_origin,
+#                              reference_center=reference_center, R=R, default_pixel_value=0.0)
+#     mask_rv_sax = get_sax_view(im=rv_im, reference_image=reference_image, reference_origin=sax_origin,
+#                              reference_center=reference_center, R=R, default_pixel_value=0.0)
+#     mask_lvwall_sax = get_sax_view(im=lvwall_im, reference_image=reference_image, reference_origin=sax_origin,
+#                              reference_center=reference_center, R=R, default_pixel_value=0.0)
+#
+# mask_lvendo_sax = sitk.Cast(mask_lvendo_sax, sitk.sitkUInt8)
+# mask_rv_sax = sitk.Cast(mask_rv_sax, sitk.sitkUInt8)
+# mask_wall_sax = sitk.Cast(mask_lvwall_sax, sitk.sitkUInt8)
+#
+# # add metadata and write output results
+# try:
+#     mask_lvendo_sax.SetMetaData('PatientName', im.GetMetaData('0010|0010'))
+# except:
+#     pass
+# try:
+#     mask_lvendo_sax.SetMetaData('PatientID', im.GetMetaData('0010|0020'))
+# except:
+#     pass
+# mask_lvendo_sax.SetMetaData('StudyDescription', 'sax')
+# mask_lvendo_sax.SetMetaData('SeriesDescription', 'lvendo')
+# sitk.WriteImage(mask_lvendo_sax, ofilename_lvendo, True)
+#
+# try:
+#     mask_rv_sax.SetMetaData('PatientName',  im.GetMetaData('0010|0010'))
+# except:
+#     pass
+# try:
+#     mask_rv_sax.SetMetaData('PatientID',  im.GetMetaData('0010|0020'))
+# except:
+#     pass
+# mask_rv_sax.SetMetaData('PatientName', 'sax')
+# mask_rv_sax.SetMetaData('SeriesDescription', 'rvepi')
+# sitk.WriteImage(mask_rv_sax, ofilename_rvepi, True)
+#
+# try:
+#     mask_wall_sax.SetMetaData('PatientName',  im.GetMetaData('0010|0010'))
+# except:
+#     pass
+# try:
+#     mask_wall_sax.SetMetaData('PatientID',  im.GetMetaData('0010|0020'))
+# except:
+#     pass
+# mask_wall_sax.SetMetaData('StudyDescription', 'sax')
+# mask_wall_sax.SetMetaData('SeriesDescription', 'lvwall')
+# sitk.WriteImage(mask_wall_sax, ofilename_lvwall, True)
 
 print('Elapsed time: ', time.time() - t)
