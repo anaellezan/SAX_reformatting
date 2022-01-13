@@ -4,10 +4,6 @@
 
 from aux_functions import *
 
-# prefix_path = '/home/marta/Desktop/DATA/Sonny/CHECK_REFORMATS_TO_SAX/0101766215/'   # example of wrong
-# prefix_path = '/home/marta/Desktop/DATA/Sonny/CHECK_REFORMATS_TO_SAX/0101766215/correct/'   # example of correct
-# prefix_path = '/home/marta/Desktop/DATA/Sonny/CHECK_REFORMATS_TO_SAX/0108029016/'
-# prefix_path = '/home/marta/Desktop/DATA/Sonny/CHECK_REFORMATS_TO_SAX/0113214161/'
 prefix_path = '/home/marta/Desktop/DATA/Sonny/CHECK_REFORMATS_TO_SAX/QC/0100307131/'
 ct_name = 'ct1'
 
