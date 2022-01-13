@@ -13,30 +13,7 @@
 
 # conda activate sax_reformatting
 
-import os
-import sys
 from aux_functions import *
-
-
-def change_masks(mask):
-    """Change mask labels from [0,1] to [0, 255]"""
-    np_mask = sitk.GetArrayFromImage(mask)
-    np_mask[np.where(np_mask == 1)] = 255
-    mask_out = sitk.GetImageFromArray(np_mask)
-    mask_out = sitk.Cast(mask_out, sitk.sitkUInt8)
-    mask_out.SetSpacing(mask.GetSpacing())
-    mask_out.SetOrigin(mask.GetOrigin())
-    mask_out.SetDirection(mask.GetDirection())
-    return mask_out
-
-def np_to_im(np_im, ref_im, pixel_type):
-    im_out = sitk.GetImageFromArray(np_im)
-    im_out = sitk.Cast(im_out, pixel_type)
-    im_out.SetSpacing(ref_im.GetSpacing())
-    im_out.SetOrigin(ref_im.GetOrigin())
-    im_out.SetDirection(ref_im.GetDirection())
-    return im_out
-
 
 prefix_path = 'example_pat0/'
 name = 'ct'
@@ -82,19 +59,26 @@ reference_origin = ref_sax.GetOrigin()
 reference_spacing = ref_sax.GetSpacing()
 
 reference_image, reference_center = compute_reference_image(ref_sax, size=sax_size, spacing=reference_spacing, reference_origin=reference_origin)
+patient_name = get_patientname(ref_sax)
 
 lvendo255_sax = get_sax_view(change_masks(lvendo_TA), reference_image, reference_origin, reference_center, R, default_pixel_value=0)
 np_lvendo255_sax = sitk.GetArrayFromImage(lvendo255_sax)
 np_lvendo255_sax[np.where(np_lvendo255_sax < 128)] = 0
 np_lvendo255_sax[np.where(np_lvendo255_sax >= 128)] = 1
-lvendo_sax = np_to_im(np_lvendo255_sax, ref_im=lvendo255_sax, pixel_type=sitk.sitkUInt8)
+# lvendo_sax = np_to_im(np_lvendo255_sax, ref_im=lvendo255_sax, pixel_type=sitk.sitkUInt8)
+lvendo_sax = np_to_image(img_arr=np_lvendo255_sax, origin=lvendo255_sax.GetOrigin(), spacing=lvendo255_sax.GetSpacing(),
+                         direction=lvendo255_sax.GetDirection(), pixel_type=sitk.sitkUInt8,
+                         name=patient_name, study_description='sax', series_description='lvendo')
 sitk.WriteImage(lvendo_sax, lvendo_sax_filename, True)
 
 lvepi255_sax = get_sax_view(change_masks(lvepi_TA), reference_image, reference_origin, reference_center, R, default_pixel_value=0)
 np_lvepi255_sax = sitk.GetArrayFromImage(lvepi255_sax)
 np_lvepi255_sax[np.where(np_lvepi255_sax < 128)] = 0
 np_lvepi255_sax[np.where(np_lvepi255_sax >= 128)] = 1
-lvepi_sax = np_to_im(np_lvepi255_sax, ref_im=lvepi255_sax, pixel_type=sitk.sitkUInt8)
+# lvepi_sax = np_to_im(np_lvepi255_sax, ref_im=lvepi255_sax, pixel_type=sitk.sitkUInt8)
+lvepi_sax = np_to_image(img_arr=np_lvepi255_sax, origin=lvepi255_sax.GetOrigin(), spacing=lvepi255_sax.GetSpacing(),
+                         direction=lvepi255_sax.GetDirection(), pixel_type=sitk.sitkUInt8,
+                         name=patient_name, study_description='sax', series_description='lvepi')
 sitk.WriteImage(lvepi_sax, lvepi_sax_filename, True)
 
 rvepi_TA = sitk.ReadImage(rvepi_filename)
@@ -102,13 +86,19 @@ rvepi255_sax = get_sax_view(change_masks(rvepi_TA), reference_image, reference_o
 np_rvepi255_sax = sitk.GetArrayFromImage(rvepi255_sax)
 np_rvepi255_sax[np.where(np_rvepi255_sax < 128)] = 0
 np_rvepi255_sax[np.where(np_rvepi255_sax >= 128)] = 1
-rvepi_sax = np_to_im(np_rvepi255_sax, ref_im=rvepi255_sax, pixel_type=sitk.sitkUInt8)
+# rvepi_sax = np_to_im(np_rvepi255_sax, ref_im=rvepi255_sax, pixel_type=sitk.sitkUInt8)
+rvepi_sax = np_to_image(img_arr=np_rvepi255_sax, origin=rvepi255_sax.GetOrigin(), spacing=rvepi255_sax.GetSpacing(),
+                         direction=rvepi255_sax.GetDirection(), pixel_type=sitk.sitkUInt8,
+                         name=patient_name, study_description='sax', series_description='rvepi')
 sitk.WriteImage(rvepi_sax, rvepi_sax_filename, True)
 
 np_lvwall_sax = np_lvepi255_sax - np_lvendo255_sax   # only 0 and 1 hopefully... shoudn't have -1...
 if len(np.unique(np_lvwall_sax)) > 2:
     print('Values in LV wall mask: ', np.unique(np_lvwall_sax))
-lvwall_sax = np_to_im(np_lvwall_sax, ref_im=rvepi255_sax, pixel_type=sitk.sitkUInt8)
+# lvwall_sax = np_to_im(np_lvwall_sax, ref_im=rvepi255_sax, pixel_type=sitk.sitkUInt8)
+lvwall_sax = np_to_image(img_arr=np_lvwall_sax, origin=lvendo255_sax.GetOrigin(), spacing=lvendo255_sax.GetSpacing(),
+                         direction=lvendo255_sax.GetDirection(), pixel_type=sitk.sitkUInt8,
+                         name=patient_name, study_description='sax', series_description='lvwall')
 sitk.WriteImage(lvwall_sax, lvwall_sax_filename, True)
 
        

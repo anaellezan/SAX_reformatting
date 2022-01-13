@@ -12,7 +12,7 @@
 #     - Only four segments of 90' each are used for the apex because of the myocardial tapering.
 #     - The apical cap represents the true muscle at the extreme tip of the ventricle where there is no longer
 #     cavity present. This segment is called the apex.
-
+import SimpleITK
 
 from aux_functions import *
 import numpy as np
@@ -147,6 +147,42 @@ bin_theta_width4 = np.divide(2 * np.pi, 4)    # 90º
 bins_theta6 = np.arange(-np.pi, np.pi + bin_theta_width6, bin_theta_width6)  # [-pi, pi]
 bins_theta4 = np.arange(-np.pi, np.pi + bin_theta_width4, bin_theta_width4) + np.pi/4    # phase difference
 
+# only 2 different centroids to do not see jumps when changing longitudinal region
+# 1. Section where longitudinal = 1 and 2
+np_long12 = np.zeros_like(np_longitudinal)
+np_long12[np.where(np_longitudinal == 1)] = 1
+np_long12[np.where(np_longitudinal == 2)] = 1
+x_extension = np.unique(np.where((np_long12 == 1) & (np_lvepi == 1))[2])    # x real...
+y_extension = np.unique(np.where((np_long12 == 1) & (np_lvepi == 1))[1])    # y
+center_x = np.round(np.divide(np.max(x_extension) + np.min(x_extension), 2))
+center_y = np.round(np.divide(np.max(y_extension) + np.min(y_extension), 2))
+x_mat = np.array([np.arange(512) - center_x, ] * 512)  # center matrix subtracting center_x
+y_mat = np.array([np.arange(512) - center_y, ] * 512).transpose()
+r, theta = cartesian_to_polar(x_mat, y_mat)
+
+np_circunf6[np.where((np_long12 == 1) & (theta >= bins_theta6[0]) & (theta <= bins_theta6[1]))] = 1    # section labels start at 1
+np_circunf6[np.where((np_long12 == 1) & (theta >= bins_theta6[1]) & (theta <= bins_theta6[2]))] = 2
+np_circunf6[np.where((np_long12 == 1) & (theta >= bins_theta6[2]) & (theta <= bins_theta6[3]))] = 3
+np_circunf6[np.where((np_long12 == 1) & (theta >= bins_theta6[3]) & (theta <= bins_theta6[4]))] = 4
+np_circunf6[np.where((np_long12 == 1) & (theta >= bins_theta6[4]) & (theta <= bins_theta6[5]))] = 5
+np_circunf6[np.where((np_long12 == 1) & (theta >= bins_theta6[5]) & (theta <= 4))] = 6
+
+# # 2. Section where longitudinal = 3
+# x_extension = np.unique(np.where((np_longitudinal == 3) & (np_lvepi == 1))[2])    # x real...
+# y_extension = np.unique(np.where((np_longitudinal == 3) & (np_lvepi == 1))[1])    # y
+# center_x = np.round(np.divide(np.max(x_extension) + np.min(x_extension), 2))
+# center_y = np.round(np.divide(np.max(y_extension) + np.min(y_extension), 2))
+# x_mat = np.array([np.arange(512) - center_x, ] * 512)  # center matrix subtracting center_x
+# y_mat = np.array([np.arange(512) - center_y, ] * 512).transpose()
+# r, theta = cartesian_to_polar(x_mat, y_mat)
+#
+# np_circunf4[np.where((np_longitudinal == 3) & (theta >= bins_theta4[0]) & (theta <= bins_theta4[1]))] = 1
+# np_circunf4[np.where((np_longitudinal == 3) & (theta >= bins_theta4[1]) & (theta <= bins_theta4[2]))] = 2
+# np_circunf4[np.where((np_longitudinal == 3) & (theta >= bins_theta4[2]) & (theta <= bins_theta4[3]))] = 3
+# np_circunf4[np.where((np_longitudinal == 3) & (theta >= bins_theta4[3]) & (theta <= 4))] = 4   # pi discontinuity, continue in the next line
+# np_circunf4[np.where((np_longitudinal == 3) & (theta >= -np.pi) & (theta <= -np.pi + np.pi/4))] = 4
+
+
 # Use Apex as axis center for theta
 x_extension = np.unique(np.where((np_lvepi == 1) & (np_apex == 1))[2])
 y_extension = np.unique(np.where((np_lvepi == 1) & (np_apex == 1))[1])
@@ -156,31 +192,11 @@ x_mat = np.array([np.arange(512) - center_x, ] * 512)  # center matrix subtracti
 y_mat = np.array([np.arange(512) - center_y, ] * 512).transpose()
 r, theta = cartesian_to_polar(x_mat, y_mat)
 
-for z_slice in range(min_z_usable_wall, long_bins[2]):
-    pos1 = np.where((theta >= bins_theta6[0]) & (theta <= bins_theta6[1]))
-    pos2 = np.where((theta > bins_theta6[1]) & (theta <= bins_theta6[2]))
-    pos3 = np.where((theta > bins_theta6[2]) & (theta <= bins_theta6[3]))
-    pos4 = np.where((theta > bins_theta6[3]) & (theta <= bins_theta6[4]))
-    pos5 = np.where((theta > bins_theta6[4]) & (theta <= bins_theta6[5]))
-    pos6 = np.where((theta > bins_theta6[5]) & (theta <= 4))  # I was losing the last one (pi / -pi)
-    np_circunf6[z_slice, pos1[0], pos1[1]] = 1
-    np_circunf6[z_slice, pos2[0], pos2[1]] = 2
-    np_circunf6[z_slice, pos3[0], pos3[1]] = 3
-    np_circunf6[z_slice, pos4[0], pos4[1]] = 4
-    np_circunf6[z_slice, pos5[0], pos5[1]] = 5
-    np_circunf6[z_slice, pos6[0], pos6[1]] = 6
-
-for z_slice in range(long_bins[2], max_z_usable_wall):
-    pos1 = np.where((theta >= bins_theta4[0]) & (theta <= bins_theta4[1]))    # -3pi/4 to -pi/4
-    pos2 = np.where((theta > bins_theta4[1]) & (theta <= bins_theta4[2]))     # -pi/4 to pi/4
-    pos3 = np.where((theta > bins_theta4[2]) & (theta <= bins_theta4[3]))     # pi/4 to 3*pi/4
-    pos4 = np.where((theta > bins_theta4[3]) & (theta <= 4))                  # last one is 3*pi/4 to pi + -pi to -3pi/4
-    pos5 = np.where((theta > -np.pi) & (theta < bins_theta4[0]))              # use pos4 and pos5 for this piece
-    np_circunf4[z_slice, pos1[0], pos1[1]] = 1
-    np_circunf4[z_slice, pos2[0], pos2[1]] = 2
-    np_circunf4[z_slice, pos3[0], pos3[1]] = 3
-    np_circunf4[z_slice, pos4[0], pos4[1]] = 4     # the last piece includes the sign discontinuity
-    np_circunf4[z_slice, pos5[0], pos5[1]] = 4
+np_circunf4[np.where((np_longitudinal == 3) & (theta >= bins_theta4[0]) & (theta <= bins_theta4[1]))] = 1    # section labels start at 1
+np_circunf4[np.where((np_longitudinal == 3) & (theta > bins_theta4[1]) & (theta <= bins_theta4[2]))] = 2
+np_circunf4[np.where((np_longitudinal == 3) & (theta > bins_theta4[2]) & (theta <= bins_theta4[3]))] = 3
+np_circunf4[np.where((np_longitudinal == 3) & (theta > bins_theta4[3]) & (theta <= bins_theta4[4]))] = 4
+np_circunf4[np.where((np_longitudinal == 3) & (theta > -np.pi) & (theta < bins_theta4[0]))] = 4
 
 
 # create 17-aha
@@ -208,7 +224,8 @@ aha = np_to_image(np_aha, lvwall_mask.GetOrigin(), lvwall_mask.GetSpacing(), lvw
                   sitk.sitkUInt8, name=pat_id, study_description='LV wall', series_description='aha')
 sitk.WriteImage(aha, lvwall_aha_filename)
 
-# Save only dilated version
+
+# Save dilated version
 if dilate_wall:
     # compute aha segments also in the dilated LV wall and get mesh with labels
     np_aha_wall_dil = np.zeros(np_lvwall_dil.shape)
