@@ -26,7 +26,7 @@ Schematic pipeline:
 With respect to the method presented in the paper, this code additionally includes:
   - a 4th rotation (suggested and implemented by Nicolas Cedilnik) that improves LV septum alignment: after a  preliminary reformat to sax, use LV endo and LV epi masks (a slice midway along the long axis) to compute LV and RV centers and get the rotation matrix that will place the RV to the left of the LV
   - The option of keeping the physical location (approx). Manually modify the 'keep_physical_location' variable to 'True'. Otherwise, the default behaviour is to set the output image origin = (0,0,0).
-  - The option of performing an initial automatic check of complete LV in TA view. If check_lv_cropped = True, exit if not complete LV. 
+  - The option of performing an initial automatic check of complete LV in TA view. If check_lv_cropped = True, exit if not complete (cropped) LV. 
   - Automatic check of potential appex cropping with current spacing and spacing modification if necessary.
 
 ## Extras
