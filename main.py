@@ -28,7 +28,6 @@ python main.py --path example_pat0/ --ct_im ct.mha --mask_lvendo ct-lvendo.mha -
 from aux_functions import *
 import os, time, argparse, sys
 import numpy as np
-import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', type=str, metavar='PATH', help='Data path')
@@ -147,14 +146,9 @@ else:
                              reference_center=reference_center, R=R, default_pixel_value=min_intensity_value)
 im_sax = sitk.Cast(im_sax, sitk.sitkInt16)
 
-try:
-    im_sax.SetMetaData('PatientName', im.GetMetaData('0010|0010'))   # MUSIC style
-except:
-    pass
-try:
-    im_sax.SetMetaData('PatientID', im.GetMetaData('0010|0020'))
-except:
-    pass
+patient_name = get_patientname(im)
+im_sax.SetMetaData('PatientName', patient_name)
+
 im_sax.SetMetaData('StudyDescription', 'sax')
 im_sax.SetMetaData('SeriesDescription', 'image')
 sitk.WriteImage(im_sax, ofilename_ct, True)

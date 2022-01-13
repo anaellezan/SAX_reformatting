@@ -51,6 +51,46 @@ def check_cropped_lv_TA(lvwall_im):
                  'check_lv_cropped to false and run again.')
 
 
+def change_masks(mask):
+    """Change mask labels from [0,1] to [0, 255]"""
+    np_mask = sitk.GetArrayFromImage(mask)
+    np_mask[np.where(np_mask == 1)] = 255
+    mask_out = sitk.GetImageFromArray(np_mask)
+    mask_out = sitk.Cast(mask_out, sitk.sitkUInt8)
+    mask_out.SetSpacing(mask.GetSpacing())
+    mask_out.SetOrigin(mask.GetOrigin())
+    mask_out.SetDirection(mask.GetDirection())
+    return mask_out
+
+
+def np_to_image(img_arr, origin, spacing, direction, pixel_type, name='',  study_description='', series_description=''):
+    """Save numpy array as itk image (volume) specifiying origin, spacing and direction desired
+    Add also few metadata."""
+    itk_img = sitk.GetImageFromArray(img_arr, isVector=False)
+    itk_img = sitk.Cast(itk_img, pixel_type)    # reduce size by specifying minimum required pixel type, i.e. sitk.sitkUInt8 for masks, sitk.sitkInt16 for CTs, etc
+    itk_img.SetSpacing(spacing)
+    itk_img.SetOrigin(origin)
+    itk_img.SetDirection(direction)
+    itk_img.SetMetaData('PatientName', name)
+    itk_img.SetMetaData('StudyDescription', study_description)
+    itk_img.SetMetaData('SeriesDescription', series_description)
+    return itk_img
+
+
+def get_patientname(im):
+    """ Try to get the patient name from the metadata. If empty return '' """
+    patient_name = ''
+    try:
+        patient_name = im.GetMetaData('PatientName')
+    except:
+        pass
+    try:
+        patient_name = im.GetMetaData('0010|0020')
+    except:
+        pass
+    return patient_name
+
+
 def get_mesh(inputFilename, path):
     """Apply marching cubes to get mesh from corresponding mask
     If masks are .mha read and write as .vtk before"""
