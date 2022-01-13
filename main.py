@@ -45,6 +45,7 @@ sax_size = 512                                  # size of reformatted sax image 
 isotropic_resolution = args.isotropic           # if 0, output spacing depends on initial data size.
 sax_iso_spacing = np.array([0.5, 0.5, 0.5])     # Default sax spacing, it will be increased if LV cropped after reformatting
 keep_physical_location = False                  # if True, keep physical location (approx). If False, origin = (0,0,0)
+check_lv_cropped = True                         # check if not full LV in the original TA image and exit if cropped
 
 t = time.time()
 
@@ -62,6 +63,10 @@ if not os.path.isfile(ifilename_lvwall):
     sys.exit('LV wall mask input file does not exist, check the path')
 if not os.path.isfile(ifilename_rvepi):
     sys.exit('RV mask input file does not exist, check the path')
+
+if check_lv_cropped:        # check if full LV in TA view
+    check_cropped_lv_TA(sitk.ReadImage(ifilename_lvwall))
+
 
 # Output
 ofilename_ct = args.path + args.ct_im[0:-4] + '-sax.mha'

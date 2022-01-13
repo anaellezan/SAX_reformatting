@@ -2,7 +2,7 @@ import SimpleITK as sitk
 import numpy as np
 import vtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
-import math, os
+import math, os, sys
 import pyvista as pv
 import pyacvd
 
@@ -25,6 +25,30 @@ def writevtk(surface, filename, type='binary'):
     elif type == 'binary':
         writer.SetFileTypeToBinary()
     writer.Write()
+
+
+def surfacearea(polydata):
+    properties = vtk.vtkMassProperties()
+    properties.SetInputData(polydata)
+    properties.Update()
+    return properties.GetSurfaceArea()
+
+
+def volume(polydata):
+    """Compute volume in polydata."""
+    properties = vtk.vtkMassProperties()
+    properties.SetInputData(polydata)
+    properties.Update()
+    return properties.GetVolume()
+
+
+def check_cropped_lv_TA(lvwall_im):
+    np_mask = sitk.GetArrayFromImage(lvwall_im)
+    overlap = np.sum(np_mask[0, :, :])      # check the z axis (ITK-snap world), add up the last slice.
+    if overlap > 0.0:                       # If not overlap, sum = 0
+        print('Nb of overlapping (with border) voxels', overlap)
+        sys.exit('Not complete LV in TA view. If you still want to compute the corresponding SAX, set variable '
+                 'check_lv_cropped to false and run again.')
 
 
 def get_mesh(inputFilename, path):
