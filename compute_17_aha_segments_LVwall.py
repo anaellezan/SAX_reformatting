@@ -12,7 +12,6 @@
 #     - Only four segments of 90' each are used for the apex because of the myocardial tapering.
 #     - The apical cap represents the true muscle at the extreme tip of the ventricle where there is no longer
 #     cavity present. This segment is called the apex.
-import SimpleITK
 
 from aux_functions import *
 import numpy as np
