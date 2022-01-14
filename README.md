@@ -38,9 +38,21 @@ A couple of additional functionalities are also included:
 ## Code
 [Python](https://www.python.org/)
 
-Required packages: NumPy, pyacvd, SimpleITK, VTK, pyvista. 
+Required packages: VTK, SimpleITK, NumPy, pyvista, pyacvd. 
 
 ## Instructions
+[Recommended] Create specific conda environment:
+```
+conda create --name sax_reformatting python=3.8
+conda activate sax_reformatting
+conda install -c simpleitk simpleitk
+conda install -c anaconda numpy
+pip install vtk    # conda not good behaviour
+pip install pyvista
+pip install pyacvd
+```
+
+
 Clone the repository:
 ```
 git clone https://github.com/martanunez/SAX_reformatting
@@ -63,7 +75,6 @@ Arguments:
   --mask_rvepi        Input RV epi mask name
   --save              Save intermediate results (rotated meshes etc.)
   --isotropic         Output must be isotropic
-
 ```
 
 ## Usage example
