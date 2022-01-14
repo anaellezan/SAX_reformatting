@@ -221,7 +221,7 @@ np_aha[np.where(np_lvwall == 0)] = 0  # bg still bg
 
 aha = np_to_image(np_aha, lvwall_mask.GetOrigin(), lvwall_mask.GetSpacing(), lvwall_mask.GetDirection(),
                   sitk.sitkUInt8, name=pat_id, study_description='LV wall', series_description='aha')
-sitk.WriteImage(aha, lvwall_aha_filename)
+sitk.WriteImage(aha, lvwall_aha_filename, True)
 
 
 # Save dilated version
@@ -250,4 +250,4 @@ if dilate_wall:
     aha_wall_dil = np_to_image(np_aha_wall_dil, lvwall_mask.GetOrigin(), lvwall_mask.GetSpacing(),
                                lvwall_mask.GetDirection(),
                                sitk.sitkUInt8, name=pat_id, study_description='LV wall dil', series_description='aha')
-    sitk.WriteImage(aha_wall_dil, lvwall_aha_dil_filename)
+    sitk.WriteImage(aha_wall_dil, lvwall_aha_dil_filename, True)
