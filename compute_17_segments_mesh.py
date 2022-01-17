@@ -129,21 +129,21 @@ np_circunf4[np.where((np_longitudinal == 3) & (theta >= -np.pi) & (theta <= -np.
 
 # define the 17 regions
 np_regions = np.zeros(np_circunf6.shape)
-np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 1))] = 2
-np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 2))] = 1
-np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 3))] = 6
-np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 4))] = 5
-np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 5))] = 4
-np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 6))] = 3
-np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 1))] = 8
-np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 2))] = 7
-np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 3))] = 12
-np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 4))] = 11
-np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 5))] = 10
-np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 6))] = 9
-np_regions[np.where((np_longitudinal == 3) & (np_circunf4 == 1))] = 13
+np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 1))] = 3
+np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 2))] = 4
+np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 3))] = 5
+np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 4))] = 6
+np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 5))] = 1
+np_regions[np.where((np_longitudinal == 1) & (np_circunf6 == 6))] = 2
+np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 1))] = 9
+np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 2))] = 10
+np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 3))] = 11
+np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 4))] = 12
+np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 5))] = 7
+np_regions[np.where((np_longitudinal == 2) & (np_circunf6 == 6))] = 8
+np_regions[np.where((np_longitudinal == 3) & (np_circunf4 == 1))] = 15
 np_regions[np.where((np_longitudinal == 3) & (np_circunf4 == 2))] = 16
-np_regions[np.where((np_longitudinal == 3) & (np_circunf4 == 3))] = 15
+np_regions[np.where((np_longitudinal == 3) & (np_circunf4 == 3))] = 13
 np_regions[np.where((np_longitudinal == 3) & (np_circunf4 == 4))] = 14
 np_regions[np.where(np_longitudinal == 4)] = 17
 

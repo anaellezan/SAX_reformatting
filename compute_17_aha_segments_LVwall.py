@@ -13,6 +13,8 @@
 #     - The apical cap represents the true muscle at the extreme tip of the ventricle where there is no longer
 #     cavity present. This segment is called the apex.
 
+## NOTE: corrected Anterior/Inferior long time confusion
+
 from aux_functions import *
 import numpy as np
 
@@ -200,49 +202,49 @@ np_circunf4[np.where((np_longitudinal == 3) & (theta > -np.pi) & (theta < bins_t
 
 # create 17-aha
 np_aha = np.zeros(np_lvwall.shape)
-np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 1))] = 2
-np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 2))] = 1
-np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 3))] = 6
-np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 4))] = 5
-np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 5))] = 4
-np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 6))] = 3
-np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 1))] = 8
-np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 2))] = 7
-np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 3))] = 12
-np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 4))] = 11
-np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 5))] = 10
-np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 6))] = 9
-np_aha[np.where((np_longitudinal == 3) & (np_circunf4 == 1))] = 13
+np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 1))] = 3
+np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 2))] = 4
+np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 3))] = 5
+np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 4))] = 6
+np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 5))] = 1
+np_aha[np.where((np_longitudinal == 1) & (np_circunf6 == 6))] = 2
+np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 1))] = 9
+np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 2))] = 10
+np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 3))] = 11
+np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 4))] = 12
+np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 5))] = 7
+np_aha[np.where((np_longitudinal == 2) & (np_circunf6 == 6))] = 8
+np_aha[np.where((np_longitudinal == 3) & (np_circunf4 == 1))] = 15
 np_aha[np.where((np_longitudinal == 3) & (np_circunf4 == 2))] = 16
-np_aha[np.where((np_longitudinal == 3) & (np_circunf4 == 3))] = 15
+np_aha[np.where((np_longitudinal == 3) & (np_circunf4 == 3))] = 13
 np_aha[np.where((np_longitudinal == 3) & (np_circunf4 == 4))] = 14
 np_aha[np.where(np_longitudinal == 4)] = 17
 np_aha[np.where(np_lvwall == 0)] = 0  # bg still bg
 
 aha = np_to_image(np_aha, lvwall_mask.GetOrigin(), lvwall_mask.GetSpacing(), lvwall_mask.GetDirection(),
                   sitk.sitkUInt8, name=pat_id, study_description='LV wall', series_description='aha')
-sitk.WriteImage(aha, lvwall_aha_filename, True)
+sitk.WriteImage(aha, lvwall_aha_filename)
 
 
 # Save dilated version
 if dilate_wall:
     # compute aha segments also in the dilated LV wall and get mesh with labels
     np_aha_wall_dil = np.zeros(np_lvwall_dil.shape)
-    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 1))] = 2
-    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 2))] = 1
-    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 3))] = 6
-    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 4))] = 5
-    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 5))] = 4
-    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 6))] = 3
-    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 1))] = 8
-    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 2))] = 7
-    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 3))] = 12
-    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 4))] = 11
-    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 5))] = 10
-    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 6))] = 9
-    np_aha_wall_dil[np.where((np_longitudinal == 3) & (np_circunf4 == 1))] = 13
+    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 1))] = 3
+    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 2))] = 4
+    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 3))] = 5
+    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 4))] = 6
+    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 5))] = 1
+    np_aha_wall_dil[np.where((np_longitudinal == 1) & (np_circunf6 == 6))] = 2
+    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 1))] = 9
+    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 2))] = 10
+    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 3))] = 11
+    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 4))] = 12
+    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 5))] = 7
+    np_aha_wall_dil[np.where((np_longitudinal == 2) & (np_circunf6 == 6))] = 8
+    np_aha_wall_dil[np.where((np_longitudinal == 3) & (np_circunf4 == 1))] = 15
     np_aha_wall_dil[np.where((np_longitudinal == 3) & (np_circunf4 == 2))] = 16
-    np_aha_wall_dil[np.where((np_longitudinal == 3) & (np_circunf4 == 3))] = 15
+    np_aha_wall_dil[np.where((np_longitudinal == 3) & (np_circunf4 == 3))] = 13
     np_aha_wall_dil[np.where((np_longitudinal == 3) & (np_circunf4 == 4))] = 14
     np_aha_wall_dil[np.where(np_longitudinal == 4)] = 17
     np_aha_wall_dil[np.where(np_lvwall_dil == 0)] = 0  # bg still bg
@@ -250,4 +252,4 @@ if dilate_wall:
     aha_wall_dil = np_to_image(np_aha_wall_dil, lvwall_mask.GetOrigin(), lvwall_mask.GetSpacing(),
                                lvwall_mask.GetDirection(),
                                sitk.sitkUInt8, name=pat_id, study_description='LV wall dil', series_description='aha')
-    sitk.WriteImage(aha_wall_dil, lvwall_aha_dil_filename, True)
+    sitk.WriteImage(aha_wall_dil, lvwall_aha_dil_filename)
