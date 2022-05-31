@@ -106,7 +106,7 @@ def get_mesh(inputFilename, path):
     mc = vtk.vtkImageMarchingCubes()
     mc.SetInputData(reader.GetOutput())
     mc.SetNumberOfContours(1)
-    mc.SetValue(0, 0.5)
+    mc.SetValue(0, 0.5)                             # for [0, 1] masks. Change accordingly otherwise
     mc.Update()
     if remove:
         os.remove(path + '/aux.vtk')
@@ -131,7 +131,7 @@ def uniform_remesh(ifilename, ofilename, nbpoints, subdivide=False):
     mesh = pv.wrap(vtkmesh)    # faster
     clus = pyacvd.Clustering(mesh)
     if subdivide:
-        clus.subdivide(3)        # not necessary most of the cases (very slow), but necessary sometimes
+        clus.subdivide(3)        # not necessary most of the cases (very slow), but mandatory sometimes :s
     clus.cluster(nbpoints)
     remeshed = clus.create_mesh()
     remeshed.save(ofilename, binary=True, texture=None)
@@ -651,6 +651,44 @@ def get_sax_view(im, reference_image, reference_origin, reference_center, R, def
     im_sax = sitk.Resample(im, reference_image, centered_transform, sitk.sitkLinear, int(default_pixel_value))
     im_sax.SetDirection(np.array(direction_matrix).flatten())
     return im_sax
+
+
+def reformat_mask_to_sax(input_mask, ref_sax, r_sax_filename):     # ref_sax = im_sax
+    """ Reformat given BINARY (0,1) mask to sax. First change to 0-255 mask to avoid interpolation problems, and go
+    back to 0-1 after reformatting. Get image parameters from corresponding ref_sax = ct1-sax-iso.mha for example """
+
+    mask_255 = sitk.BinaryThreshold(input_mask, lowerThreshold=1, upperThreshold=1, insideValue=255, outsideValue=0)
+
+    R = np.loadtxt(r_sax_filename)
+
+    # sax_size = ref_sax.GetSize()[0]  # only one, then compute_reference_images does: reference_size = [size] * dimension
+    reference_origin = ref_sax.GetOrigin()
+    reference_spacing = ref_sax.GetSpacing()
+    dimension = ref_sax.GetDimension()
+    reference_direction = np.identity(dimension).flatten()
+    reference_size = ref_sax.GetSize()
+
+    reference_image = sitk.Image(reference_size, ref_sax.GetPixelIDValue())
+    reference_image.SetOrigin(reference_origin)
+    reference_image.SetSpacing(reference_spacing)
+
+    reference_image.SetDirection(reference_direction)
+    reference_center = np.array(reference_image.TransformContinuousIndexToPhysicalPoint(
+        np.array(reference_image.GetSize()) / 2.0))  # geometrical center (coordinates)
+
+    mask_255_sax = get_sax_view(mask_255, reference_image, reference_origin, reference_center, R,
+                                 default_pixel_value=0)
+    # go back to [0, 1] mask
+    mask_sax = sitk.BinaryThreshold(mask_255_sax, lowerThreshold=128, upperThreshold=255, insideValue=1, outsideValue=0)
+
+    return mask_sax
+
+
+def add_basic_metadata(im, patient_name, study_description, series_description):
+    im.SetMetaData('PatientName', patient_name)
+    im.SetMetaData('StudyDescription', study_description)
+    im.SetMetaData('SeriesDescription', series_description)
+    return im
 
 
 def round_decimals_up(number: float, decimals: int = 2):
