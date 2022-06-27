@@ -1,6 +1,6 @@
 # Compute 17-AHA segmentation of a given LV wall mask. 
-# The output is the LV wall volume with the corresponding 17-AHA labels. Probe that image to get values on meshes etc
-# If dilate_wall = True, compute also a dilated version of the wall to help 'probing' LV endo or LV epi (extremest) meshes
+# The output is the LV wall volume with the corresponding 17-AHA labels. The image can then be probed to get values on meshes etc.
+# If dilate_wall = True, compute also a dilated version of the wall to help 'probing' LV endo or LV epi (extremest) meshes.
 
 # Use official definition of the 17-AHA model described here: https://www.pmod.com/files/download/v34/doc/pcardp/3615.html
 # 17-Segment Model (AHA). Left Ventricle Segmentation Procedure:
@@ -38,19 +38,17 @@ def check_360(thetas, tolerance=0.10):
 
 dilate_wall = True
 
-path = '/home/marta/PycharmProjects/SAX_reformat_clean/example_pat0/'
-pat_id = '0100414513'
+path = 'example_pat0/'
+pat_id = 'pat_id'
 name = 'ct'
 lvendo_mask_filename = path + name + '-lvendo-sax.mha'
 lvepi_mask_filename = path + name + '-lvepi-sax.mha'
 rvepi_mask_filename = path + name + '-rvepi-sax.mha'
-# lvwall_filename = path + pat_id + '/' + name + '-thickness.mha'     # For the scar project, the LV wall 
-# mask may be given as the thickness.mha file (not binary but easily binarizable)
 lvwall_filename = path + name + '-lvwall-sax.mha'
-
 lvwall_aha_filename = path + name + '-lvwall-sax-aha.mha'
+
 if dilate_wall:
-    dilate_mm = 1.0  # dilate LV wall to : help with probe filter to get labels in the mesh
+    dilate_mm = 1.0     # dilate LV wall to help the probe filter in obtaining the correct labels in the mesh
     lvwall_aha_dil_filename = path + name + '-lvwall-sax-dil-aha.mha'
 
 lvendo_mask = sitk.ReadImage(lvendo_mask_filename)
@@ -62,14 +60,12 @@ lvwall_mask = sitk.ReadImage(lvwall_filename)
 np_lvwall_mask = sitk.GetArrayFromImage(lvwall_mask)
 np_lvwall_mask[np.where(np.isnan(np_lvwall_mask))] = 0
 np_lvwall_mask[np.where(np_lvwall_mask > 0)] = 1
-# lvwall_mask = np_to_image(np_lvwall_mask, lvwall_mask, sitk.sitkUInt8)
 patient_name = get_patientname(lvendo_mask)
 lvwall_mask = np_to_image(img_arr=np_lvwall_mask, origin=lvwall_mask.GetOrigin(), spacing=lvwall_mask.GetSpacing(),
                          direction=lvwall_mask.GetDirection(), pixel_type=sitk.sitkUInt8,
                          name=patient_name, study_description='sax', series_description='lvepi')
 
 if dilate_wall:
-    # Dilate a bit the LV wall to help the projection of aha labels using the probe filter
     dilate = sitk.BinaryDilateImageFilter()
     spacing = lvepi_mask.GetSpacing()
     dilate_voxels = int(np.round(np.divide(dilate_mm, np.array(spacing[0]))))
@@ -86,7 +82,6 @@ np_lvendo = sitk.GetArrayFromImage(lvendo_mask)
 # Find LV extension in the z axis
 z_extension_wall = np.unique(np.where(np_lvwall == 1)[0])  # z is [0]
 z_extension_endo = np.unique(np.where(np_lvendo == 1)[0])
-# long_axis_span = np.max(z_extension_wall) - np.min(z_extension_wall)
 # find z-slice index corresponding to the middle of LV wall mask
 mid_lv_long_axis = int(np.round(np.divide(np.max(z_extension_wall) + np.min(z_extension_wall), 2)))
 # print('Middle point', mid_lv_long_axis)
@@ -122,7 +117,6 @@ for z_slice in range(np.min(z_extension_wall), first_apex_slice):
     # use slice dependent center, just to check the 360
     slice_center_x = np.round(np.divide(np.max(all_x) + np.min(all_x), 2))
     slice_center_y = np.round(np.divide(np.max(all_y) + np.min(all_y), 2))
-    # r, theta = cartesian_to_polar(all_x - center_x, all_y - center_y)
     r, theta = cartesian_to_polar(all_x - slice_center_x, all_y - slice_center_y)
 
     if check_360(thetas=theta, tolerance=0.10):
