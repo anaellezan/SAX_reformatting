@@ -43,6 +43,7 @@ def volume(polydata):
 
 
 def check_cropped_lv_TA(lvwall_im):
+    """ Check if the LV is not complete in the original raw TA image """
     np_mask = sitk.GetArrayFromImage(lvwall_im)
     overlap = np.sum(np_mask[0, :, :])      # check the z axis (ITK-snap world), add up the last slice.
     if overlap > 0.0:                       # If not overlap, sum = 0
@@ -176,6 +177,7 @@ def pointthreshold(polydata, arrayname, start=0, end=1, alloff=0):
     surfer.Update()
     return surfer.GetOutput()
 
+
 def extractlargestregion(polydata):
     """Keep only biggest region"""
     surfer = vtk.vtkDataSetSurfaceFilter()
@@ -245,7 +247,7 @@ def detect_mv(lv_endo, wall, rv, max_dist_wall=5.0, factor_for_maxdist_rv=2):
     # but sometimes the remeshing fails and produces empty polydata
     # max_dist_rv = np.divide(max_abs_dist_rv, 2.5)
 
-    mv_array[np.where((np_distances_wall >= max_dist_wall) & (np_distances_rv >= max_dist_rv))] = 1  # I can't do the verification of empty MV points here because I may have few points with mv_array = 1 that will create and empty surface (not connected, no cells)
+    mv_array[np.where((np_distances_wall >= max_dist_wall) & (np_distances_rv >= max_dist_rv))] = 1  # I can't do the verification of empty MV points here because I may have few points with mv_array = 1 that will create an empty surface (not connected, no cells)
     lv_endo.GetPointData().AddArray(numpy_to_vtk_M(mv_array, 'mv'))
 
     # Careful, trabeculations may be also far from LV wall and RV and will be marked as MV
@@ -324,7 +326,6 @@ def set_vertices(polydata, v):
     return polydata
 
 
-# def compute_reference_image(im_ref, size=512, full_spacing=False, spacing=np.array([0.5, 0.5, 0.5]),
 def compute_reference_image(im_ref, size=512, spacing=np.array([0.5, 0.5, 0.5]),
                             reference_origin=np.array([0, 0, 0])):
     """ Given input image, desired physical center and spacing, compute reference parameters needed for resampling"""
@@ -340,6 +341,7 @@ def compute_reference_image(im_ref, size=512, spacing=np.array([0.5, 0.5, 0.5]),
     reference_center = np.array(reference_image.TransformContinuousIndexToPhysicalPoint(
         np.array(reference_image.GetSize()) / 2.0))  # geometrical center (coordinates)
     return reference_image, reference_center
+
 
 def compute_reference_image_keep_location(im_ref, size=512, spacing=np.array([0.5, 0.5, 0.5])):
     """ Given input image compute reference parameters needed for resampling maintaining (approx) the same physical
@@ -413,7 +415,6 @@ def compute_rotation_to_sax(path, lvendo_filename, lvwall_filename, rvepi_filena
 
     ##### Align MV to theoretical MV plane.
     # Detect MV and MV centroid. Find points in the endo that are far from points in the LV wall.
-    # lv_endo_m, mv_m = detect_mv(lv_endo_m, lv_wall_m, rv_epi_m)  # Only MV (hopefully)
     lv_endo_m, mv_m = detect_mv(lv_endo_m, lv_wall_m, rv_epi_m, max_dist_wall=5.0, factor_for_maxdist_rv=2.0)
     # print('Number of points of detected MV', mv_m.GetNumberOfPoints())
 
@@ -730,20 +731,16 @@ def do_lv_lax_qc(prefix_path, lvendo_filename, lvwall_filename, rvepi_filename, 
 
     lv_endo, mv_m = detect_mv(lv_endo, wall, rv, max_dist_wall=5.0, factor_for_maxdist_rv=2)
 
-    # mv_normals_m = cellnormals(mv_m)
-    # mv_normals = vtk_to_numpy(mv_normals_m.GetCellData().GetArray('Normals'))
-    # mv_normal = np.mean(mv_normals, axis=0)
     mv_centroid = get_center_of_mass(mv_m)
-    # print('MV normal: ', mv_normal)    # quite displaced in the end due to the subsequent alignments...
 
-    # Find apex id as furthest point to mv_centroid (I will use it in the latest alignment)
+    # Find apex id as furthest point to mv_centroid
     np_distances_mv = np.zeros(lv_endo.GetNumberOfPoints())
     for i in range(lv_endo.GetNumberOfPoints()):
         np_distances_mv[i] = euclideandistance(mv_centroid, lv_endo.GetPoint(i))
     lv_endo.GetPointData().AddArray(numpy_to_vtk_M(np_distances_mv, 'dist_to_MV_centroid'))
     writevtk(lv_endo, lvendo_mesh_filename2)
     apex_id = np.argmax(np_distances_mv)
-    # Get long axis
+    # Get LV long axis
     p0_aux = mv_centroid
     p1_aux = np.array(lv_endo.GetPoint(apex_id))
     lv_lax = np.divide(p1_aux - p0_aux, np.linalg.norm(p1_aux - p0_aux))  # get unit vector, normalize
