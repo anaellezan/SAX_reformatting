@@ -4,8 +4,8 @@
 
 from aux_functions import *
 
-prefix_path = '/home/marta/Desktop/DATA/Sonny/CHECK_REFORMATS_TO_SAX/QC/0100307131/'
-ct_name = 'ct1'
+prefix_path = 'example_pat0/'
+ct_name = 'ct'
 
 lvendo_filename = prefix_path + ct_name + '-lvendo-sax.mha'
 lvwall_filename = prefix_path + ct_name + '-lvwall-sax.mha'
