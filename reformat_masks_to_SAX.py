@@ -1,19 +1,17 @@
 # Given R transformation matrix, masks in TA view, and the image already reformatted to SAX, get the
 # corresponding masks in SAX view.
-# Careful: outputs from Nico's segmentation method are:
+# Careful: outputs from our segmentation method are:
 #   - masks with [0, 1] value. The resampling done during the reformatting is not accurate (especially in extremely
 #   thin regions (typically apical region)) due to numerical interpolation -> change the values to [0, 255] in advance,
-#   resample, and then threshold the result.
+#   resample, and then threshold the result back to [0, 1].
 #   - LV endo and LV wall. Resampling the wall is again tricky in thin regions. Also, I need epi and endo (and not wall)
-#   for computing wall thickness with Nico's method -> create epi (endo + wall) & resample endo and epi (compact shape
-#   -> less errors due to resampling). I will then get LV wall as epi - endo (it is not necessary in this 'thickness'
-#   pipeline but for other cases...)
+#   for computing wall thickness with our method -> create epi (endo + wall) & resample endo and epi (compact shape
+#   -> less errors due to resampling). I will then get LV wall as epi - endo.
 
 # Reformat also RV epi
 
-# NOTE 1: corrected Anterior/Inferior long time confusion
-# NOTE 2: version 2 -> first I used conversion to numpy etc, now I changed to shorter/faster/more elegant approach
-# using only image masks. Results are identical
+# NOTE version 2 -> first I used conversion to numpy etc, now I changed to shorter/faster/more elegant approach
+# using only image masks. Results are identical.
 
 # conda activate sax_reformatting
 
@@ -42,7 +40,7 @@ if not os.path.isfile(lvendo_filename) or not os.path.isfile(lvwall_filename) or
 if not os.path.isfile(r_filename):
     sys.exit('txt file with rotation matrix is missing, please check the filename.')
 if not os.path.isfile(im_sax_filename):
-    sys.exit('CT image in SAX view is missing, please check the filename')
+    sys.exit('CT image in SAX view is missing, please check the filename.')
 
 
 # compute LV epi mask.
@@ -50,10 +48,6 @@ lvendo_TA = sitk.ReadImage(lvendo_filename)
 lvwall_TA = sitk.ReadImage(lvwall_filename)
 add = sitk.AddImageFilter()
 lvepi_TA = add.Execute(lvendo_TA, lvwall_TA)
-## fill small holes between them. This closing may also help in filling small holes in extremely thin wall regions
-# This creates wall voxels in the base... avoid from now
-# lvepi_TA = sitk.BinaryMorphologicalClosing(lvepi_TA, np.array([2, 2, 2], dtype='int').tolist())  # conversion to list using python3
-# sitk.WriteImage(lvepi_TA, lvepi_filename)
 
 rvepi_TA = sitk.ReadImage(rvepi_filename)
 
@@ -79,6 +73,7 @@ lvwall_sax = add_basic_metadata(lvwall_sax, patient_name, 'sax', 'lvwall')
 sitk.WriteImage(lvwall_sax, lvwall_sax_filename, True)
 
 print('Elapsed time 1 = ', time.time()-t)     # 4.49 s
+
 
 
 # #####   keep v1, using numpy etc, just in case
