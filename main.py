@@ -3,8 +3,8 @@ Implementation of "Automatic multiplanar CT reformatting from trans-axial into l
 Marta Nun~ez-Garcia et al. STACOM 2020
 
 Given a raw trans-axial CT image & corresponding LV endo, LV wall and RV epi segmentations (.mha or .vtk), compute
-LV short axis view.
-!!!!  IMPORTANT: do not reformat directly the masks here, use 'reformat_masks_to_SAX.py'  !!!!
+LV short axis view. Afterwards, use 'reformat_masks_to_SAX.py' to additionally reformat the corresponding segmentations 
+if needed.
 
 Get meshes from masks and use them to find the transformation that aligns:
 # 1. MV plane
@@ -76,8 +76,8 @@ ofilename_rvepi = args.path + args.mask_rvepi[0:-4] + '-sax.mha'
 ofilename_lvwall = args.path + args.mask_lvwall[0:-4] + '-sax.mha'
 
 
-# Read input image and define reference image
-# parameters according to input image and desired output image size, origin and spacing. Direction will be changed later
+# Read input image and define reference image parameters according to input image and desired output image size, 
+# origin and spacing. Direction will be changed later
 im = sitk.ReadImage(ifilename_ct)
 dimension = im.GetDimension()
 min_intensity_value = np.min(sitk.GetArrayFromImage(im))
@@ -152,6 +152,8 @@ im_sax.SetMetaData('PatientName', patient_name)
 im_sax.SetMetaData('StudyDescription', 'sax')
 im_sax.SetMetaData('SeriesDescription', 'image')
 sitk.WriteImage(im_sax, ofilename_ct, True)
+
+
 
 # # Resample input masks
 # lvendo_im = sitk.ReadImage(ifilename_lvendo)
