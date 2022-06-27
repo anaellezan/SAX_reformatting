@@ -20,8 +20,8 @@ def cartesian_to_polar(x, y):
     return r, theta
 
 
-prefix_path = '/home/marta/PycharmProjects/SAX_reformat_clean/example_pat0/'
-pat_id = '0100414513'
+prefix_path = 'example_pat0/'
+pat_id = 'pat_id'
 name = 'ct'
 lvwall_filename = prefix_path + 'ct-lvwall-sax-dil-aha.mha'
 mesh_filename = prefix_path + 'parcellated_mesh.vtk'
