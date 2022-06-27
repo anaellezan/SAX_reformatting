@@ -1,6 +1,6 @@
 # Given a LV wall segmentation and corresponding mesh (endo, epi, midwall etc):
 #       1. compute 17-AHA segmentation projecting the division on the LV wall image to the mesh (probe filter)
-#       2. compute segmentation directly on the mesh (17 regions but not 17-AHA since this one fully includes the basal
+#       2. compute parcellation directly on the mesh (17 regions but not 17-AHA since this one fully includes the basal
 #       region)
 #
 # Similar algorithms than the ones used in compute_17_aha_segments_LVwall.py
