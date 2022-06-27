@@ -75,7 +75,7 @@ Arguments:
   --mask_lvwall       Input LV wall mask name
   --mask_rvepi        Input RV epi mask name
   --save              Save intermediate results (rotated meshes etc.)
-  --isotropic         Output must be isotropic
+  --isotropic         If output must be isotropic
 ```
 
 ## Usage example
