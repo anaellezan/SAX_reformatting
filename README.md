@@ -33,7 +33,7 @@ With respect to the method presented in the paper, this code additionally includ
 A couple of additional functionalities are also included:
 - Basic Quality Control (QC) of the result: check final LV long axis direction (on a slightly different mesh) and compare it to the theoretical, expected, one.
 - 17-AHA LV wall parcellation computation (compute_17_aha_segments_LVwall.py). The division is done according to the ["official" definition](https://www.pmod.com/files/download/v34/doc/pcardp/3615.htm), notably, taking into account that "only slices containing myocardium in all 360° are included", i.e. part of the base is excluded.  
-- 17 regions LV mesh parcellation computation (compute_17_segments_mesh.py). Given a LV wall segmentation and corresponding mesh (endo, epi, midwall etc) compute 17-AHA segmentation projecting the division on the LV wall image to the mesh. Additionally compute alternative parcellation directly on the mesh (17 regions but not 17-AHA since this one fully includes the basal region)
+- 17 regions LV mesh parcellation computation (compute_17_segments_mesh.py). Given a LV wall segmentation and corresponding mesh (endo, epi, midwall etc) compute 17-AHA segmentation projecting the division on the LV wall image to the mesh. Additionally compute alternative parcellation directly on the mesh (17 regions but not 17-AHA since this one fully includes the basal region).
 
 
 ## Code
