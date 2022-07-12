@@ -24,7 +24,7 @@ Schematic pipeline:
 
 ## Note
 With respect to the method presented in the paper, this code additionally includes:
-  - a 4th rotation (suggested and implemented by Nicolas Cedilnik) that improves LV septum alignment: after a  preliminary reformat to sax, use LV endo and LV epi masks (a slice midway along the long axis) to compute LV and RV centers and get the rotation matrix that will place the RV to the left of the LV
+  - a 4th rotation (suggested and implemented by Nicolas Cedilnik) that improves LV septum alignment: after a  preliminary reformat to sax, use LV endo and LV epi masks (a slice midway along the long axis) to compute LV and RV centers and get the rotation matrix that will place the RV to the left of the LV.
   - The option of keeping the image world coordinates so they match in TA and SAX (default is TRUE).
   - The option of performing an initial automatic check of complete LV in TA view. If check_lv_cropped = True, exit if not complete (cropped) LV. 
   - Automatic check of potential appex cropping with current spacing and spacing modification if necessary.
@@ -78,18 +78,20 @@ Arguments:
   --isotropic         If output must be isotropic
 ```
 
-## Usage example 1: reformat image to short-axis view (Elapsed time: 17 s)
+## Usage example 1: reformat image to short-axis view (elapsed time: 17 s)
 ```
 python main.py --path example_pat0/ --ct_im ct.mha --mask_lvendo ct-lvendo.mha --mask_lvwall ct-lvwall.mha --mask_rvepi ct-rvepi.mha
 ```
 
-## Usage example 2: reformat image to short-axis view and compute corresponding 17-AHA segments (Elapsed time: 58 s)
+## Usage example 2: reformat image to short-axis view + compute corresponding 17-AHA segments + get epicardial mesh and parcellate (17-AHA and 17 regions including full basal part) it (elapsed time: 64 s)
 ```
 python main.py --path example_pat0/ --ct_im ct.mha --mask_lvendo ct-lvendo.mha --mask_lvwall ct-lvwall.mha --mask_rvepi ct-rvepi.mha
 
 python reformat_masks_to_SAX.py --path example_pat0/ --ct_im_sax ct-sax.mha --R_filename ct-R-matrix-sax.txt --mask_lvendo ct-lvendo.mha --mask_lvwall ct-lvwall.mha --mask_rvepi ct-rvepi.mha --mask_lvepi ct-lvepi-sax.mha
 
 python compute_17_aha_segments_LVwall.py --path example_pat0/ --mask_lvendo_sax ct-lvendo-sax.mha --mask_lvwall_sax ct-lvwall-sax.mha --mask_rvepi_sax ct-rvepi-sax.mha --mask_lvepi_sax ct-lvepi-sax.mha
+
+python compute_17_segments_mesh.py --path example_pat0/ --ct_mask ct-lvepi-sax.mha --ct_lvwall_labels_mask ct-lvwall-sax-dil-aha.mha
 
 ```
 
