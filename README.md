@@ -83,7 +83,7 @@ Arguments:
 python main.py --path example_pat0/ --ct_im ct.mha --mask_lvendo ct-lvendo.mha --mask_lvwall ct-lvwall.mha --mask_rvepi ct-rvepi.mha
 ```
 
-## Usage example 2: reformat image to short-axis view + compute corresponding 17-AHA segments + get epicardial mesh and parcellate (17-AHA and 17 regions including full basal part) it (elapsed time: 64 s)
+## Usage example 2: reformat image to short-axis view + compute corresponding 17-AHA segments + get epicardial mesh and parcellate it (17-AHA and 17 regions including full basal part)(elapsed time: 64 s)
 ```
 python main.py --path example_pat0/ --ct_im ct.mha --mask_lvendo ct-lvendo.mha --mask_lvwall ct-lvwall.mha --mask_rvepi ct-rvepi.mha
 
