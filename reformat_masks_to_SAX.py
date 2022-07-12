@@ -1,69 +1,82 @@
-# Given R transformation matrix, masks in TA view, and the image already reformatted to SAX, get the
-# corresponding masks in SAX view.
-# Careful: outputs from our segmentation method are:
-#   - masks with [0, 1] value. The resampling done during the reformatting is not accurate (especially in extremely
-#   thin regions (typically apical region)) due to numerical interpolation -> change the values to [0, 255] in advance,
-#   resample, and then threshold the result back to [0, 1].
-#   - LV endo and LV wall. Resampling the wall is again tricky in thin regions. Also, I need epi and endo (and not wall)
-#   for computing wall thickness with our method -> create epi (endo + wall) & resample endo and epi (compact shape
-#   -> less errors due to resampling). I will then get LV wall as epi - endo.
+""" Given R transformation matrix, masks in TA view, and the image already reformatted to SAX, get the corresponding
+masks in SAX view.
+Careful: outputs from our segmentation method are:
+  - masks with [0, 1] value. The resampling done during the reformatting is not accurate (especially in extremely
+  thin regions (typically apical region)) due to numerical interpolation -> change the values to [0, 255] in advance,
+  resample, and then threshold the result back to [0, 1].
+  - LV endo and LV wall. Resampling the wall is again tricky in thin regions. Also, I need epi and endo (and not wall)
+  for computing wall thickness with our method -> create epi (endo + wall) & resample endo and epi (compact shape
+  -> less errors due to resampling). I will then get LV wall as epi - endo.
 
-# Reformat also RV epi
+Reformat also RV epi
 
-# NOTE version 2 -> first I used conversion to numpy etc, now I changed to shorter/faster/more elegant approach
-# using only image masks. Results are identical.
+NOTE version 2 -> first I used conversion to numpy etc, now I changed to shorter/faster/more elegant approach
+using only image masks. Results are identical.
 
-# conda activate sax_reformatting
+Usage example:
+python reformat_masks_to_SAX.py --path example_pat0/ --ct_im_sax ct-sax.mha --R_filename ct-R-matrix-sax.txt --mask_lvendo ct-lvendo.mha --mask_lvwall ct-lvwall.mha --mask_rvepi ct-rvepi.mha --mask_lvepi_sax ct-lvepi-sax.mha
+
+"""
 
 from aux_functions import *
-import time
+import time, argparse
 
-prefix_path = 'example_pat0/'
-name = 'ct'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', type=str, metavar='PATH', help='Data path')
+parser.add_argument('--ct_im_sax', type=str, help='Already reformatted CT image name')
+parser.add_argument('--R_filename', type=str, help='Computed R matrix')
+parser.add_argument('--mask_lvendo', type=str, help='Input LV endo mask name')
+parser.add_argument('--mask_lvwall', type=str, help='Input LV wall mask name')
+parser.add_argument('--mask_rvepi', type=str, help='Input RV epi mask name')
+parser.add_argument('--mask_lvepi_sax', type=str, help='OUTPUT LV epi mask name')
+args = parser.parse_args()
+
+keep_world_coordinates = True
 
 # inputs
-lvendo_filename = prefix_path + name + '-lvendo.mha'
-lvwall_filename = prefix_path + name + '-lvwall.mha'
-rvepi_filename = prefix_path + name + '-rvepi.mha'
-im_sax_filename = prefix_path + name + '-sax.mha'
-r_filename = prefix_path + name + '-R-matrix-sax.txt'
+ifilename_im_sax = args.path + args.ct_im_sax
+r_filename = args.path + args.R_filename
+ifilename_lvendo = args.path + args.mask_lvendo
+ifilename_lvwall = args.path + args.mask_lvwall
+ifilename_rvepi = args.path + args.mask_rvepi
+
 
 # outputs
-lvendo_sax_filename = prefix_path + name + '-lvendo-sax.mha'
-lvepi_sax_filename = prefix_path + name + '-lvepi-sax.mha'
-lvwall_sax_filename = prefix_path + name + '-lvwall-sax.mha'
-rvepi_sax_filename = prefix_path + name + '-rvepi-sax.mha'
+lvendo_sax_filename = args.path + args.mask_lvendo[0:-4] + '-sax.mha'
+lvwall_sax_filename = args.path + args.mask_lvwall[0:-4] + '-sax.mha'
+rvepi_sax_filename = args.path + args.mask_rvepi[0:-4] + '-sax.mha'
 
+lvepi_sax_filename = args.path + args.mask_lvepi_sax
 
-if not os.path.isfile(lvendo_filename) or not os.path.isfile(lvwall_filename) or not os.path.isfile(rvepi_filename) :
+if not os.path.isfile(ifilename_lvendo) or not os.path.isfile(ifilename_lvwall) or not os.path.isfile(ifilename_rvepi):
     sys.exit('One or several segmentations are missing, please check filenames.')
 if not os.path.isfile(r_filename):
     sys.exit('txt file with rotation matrix is missing, please check the filename.')
-if not os.path.isfile(im_sax_filename):
+if not os.path.isfile(ifilename_im_sax):
     sys.exit('CT image in SAX view is missing, please check the filename.')
 
-
 # compute LV epi mask.
-lvendo_TA = sitk.ReadImage(lvendo_filename)
-lvwall_TA = sitk.ReadImage(lvwall_filename)
+lvendo_TA = sitk.ReadImage(ifilename_lvendo)
+lvwall_TA = sitk.ReadImage(ifilename_lvwall)
 add = sitk.AddImageFilter()
 lvepi_TA = add.Execute(lvendo_TA, lvwall_TA)
 
-rvepi_TA = sitk.ReadImage(rvepi_filename)
+rvepi_TA = sitk.ReadImage(ifilename_rvepi)
 
-ref_sax = sitk.ReadImage(im_sax_filename)
+ref_sax = sitk.ReadImage(ifilename_im_sax)
 patient_name = get_patientname(ref_sax)
 
 t = time.time()
-lvendo_sax = reformat_mask_to_sax(lvendo_TA, ref_sax, r_filename)
+lvendo_sax = reformat_mask_to_sax(lvendo_TA, ref_sax, r_filename, keep_world_coordinates)
 lvendo_sax = add_basic_metadata(lvendo_sax, patient_name, 'sax', 'lvendo')
 sitk.WriteImage(lvendo_sax, lvendo_sax_filename, True)
 
-lvepi_sax = reformat_mask_to_sax(lvepi_TA, ref_sax, r_filename)
+lvepi_sax = reformat_mask_to_sax(lvepi_TA, ref_sax, r_filename, keep_world_coordinates)
 lvepi_sax = add_basic_metadata(lvepi_sax, patient_name, 'sax', 'lvepi')
 sitk.WriteImage(lvepi_sax, lvepi_sax_filename, True)
 
-rvepi_sax = reformat_mask_to_sax(rvepi_TA, ref_sax, r_filename)
+rvepi_sax = reformat_mask_to_sax(rvepi_TA, ref_sax, r_filename, keep_world_coordinates)
 rvepi_sax = add_basic_metadata(rvepi_sax, patient_name, 'sax', 'rvepi')
 sitk.WriteImage(rvepi_sax, rvepi_sax_filename, True)
 
@@ -72,8 +85,7 @@ lvwall_sax = sitk.BinaryThreshold(lvwall_sax, 1, 1, 1, 0)   # correct potential 
 lvwall_sax = add_basic_metadata(lvwall_sax, patient_name, 'sax', 'lvwall')
 sitk.WriteImage(lvwall_sax, lvwall_sax_filename, True)
 
-print('Elapsed time 1 = ', time.time()-t)     # 4.49 s
-
+print('Elapsed time 1 = ', time.time()-t)     # ~ 3 s
 
 
 # #####   keep v1, using numpy etc, just in case

@@ -1,11 +1,15 @@
-# Given a LV wall segmentation and corresponding mesh (endo, epi, midwall etc):
-#       1. compute 17-AHA segmentation projecting the division on the LV wall image to the mesh (probe filter)
-#       2. compute parcellation directly on the mesh (17 regions but not 17-AHA since this one fully includes the basal
-#       region)
-#
-# Similar algorithms than the ones used in compute_17_aha_segments_LVwall.py
+""" Given a LV wall segmentation and one corresponding mesh (endo, epi, midwall etc) compute 2 surface parcellations:
+      1. 17-AHA segmentation projecting the division on the LV wall image to the mesh (probe filter)
+      2. Another parcellation directly computed on the mesh (17 regions but not 17-AHA since this one fully includes
+      the basal region)
+
+Similar algorithms than the ones used in compute_17_aha_segments_LVwall.py
+Usage example:
+python compute_17_segments_mesh.py --path example_pat0/ --ct_mask ct-lvepi-sax.mha --ct_lvwall_labels_mask ct-lvwall-sax-dil-aha.mha
+"""
 
 from aux_functions import *
+import argparse
 
 def read_mhaimage(filename):
     """Read .mha file"""
@@ -14,20 +18,28 @@ def read_mhaimage(filename):
     reader.Update()
     return reader.GetOutput()
 
-def cartesian_to_polar(x, y):
-    r = np.sqrt(x**2 + y**2)
-    theta = np.arctan2(y, x)
-    return r, theta
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', type=str, metavar='PATH', help='Data path')
+parser.add_argument('--ct_mask', type=str, help='Input mask. I will compute a mesh from this mask')
+parser.add_argument('--ct_lvwall_labels_mask', type=str, help='Input LV wall mask with labels')
+args = parser.parse_args()
 
 
-prefix_path = 'example_pat0/'
-pat_id = 'pat_id'
-name = 'ct'
-lvwall_filename = prefix_path + 'ct-lvwall-sax-dil-aha.mha'
-mesh_filename = prefix_path + 'parcellated_mesh.vtk'
+# Input filenames
+mask_input_filename = args.path + args.ct_mask     # I will create and parcellate the epi mesh as example case
+lvwall_filename = args.path + args.ct_lvwall_labels_mask    # mask with labels computed with compute_17_aha_segments_LVwall.py'
 
-# compute mesh, use epi as example case
-mesh = get_mesh(prefix_path + 'ct-lvepi-sax.mha', prefix_path)
+# output
+mesh_output_filename = mask_input_filename[0:-4] + '-parcellated-mesh.vtk'
+
+if not os.path.isfile(lvwall_filename):
+    sys.exit('Input file does not exist, check the path or run compute_17_aha_segments_LVwall.py')
+
+patient_name = get_patientname(sitk.ReadImage(lvwall_filename))
+
+# compute mesh
+mesh = get_mesh(mask_input_filename, args.path)
 
 # probe the mesh with LV wall dilated with AHA labels
 source = read_mhaimage(lvwall_filename)
@@ -157,4 +169,4 @@ except:
 
 mesh.GetPointData().RemoveArray('longitudinal')
 
-writevtk(mesh, mesh_filename)
+writevtk(mesh, mesh_output_filename)

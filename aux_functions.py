@@ -332,6 +332,7 @@ def compute_reference_image(im_ref, size=512, spacing=np.array([0.5, 0.5, 0.5]),
     dimension = im_ref.GetDimension()
     reference_direction = np.identity(dimension).flatten()
     reference_size = [size] * dimension
+
     reference_spacing = spacing
     reference_image = sitk.Image(reference_size, im_ref.GetPixelIDValue())
     reference_image.SetOrigin(reference_origin)
@@ -654,7 +655,57 @@ def get_sax_view(im, reference_image, reference_origin, reference_center, R, def
     return im_sax
 
 
-def reformat_mask_to_sax(input_mask, ref_sax, r_sax_filename):     # ref_sax = im_sax
+def get_sax_view_wcoordinates(im, R, sax_size, reference_spacing, default_pixel_value):
+    """ Compute SAX view maintaining image world coordinates (by Nicolas Cedilnik) """
+
+    direction_matrix = [R[0, 0], R[1, 0], R[2, 0],
+                        R[0, 1], R[1, 1], R[2, 1],
+                        R[0, 2], R[1, 2], R[2, 2], ]
+
+    transform = sitk.AffineTransform(3)
+    transform.SetMatrix(direction_matrix)
+
+    inverse = transform.GetInverse()
+
+    extreme_points = [
+        im.TransformIndexToPhysicalPoint((0, 0, 0)),
+        im.TransformIndexToPhysicalPoint((im.GetWidth(), 0, 0)),
+        im.TransformIndexToPhysicalPoint((im.GetWidth(), im.GetHeight(), 0)),
+        im.TransformIndexToPhysicalPoint((0, im.GetHeight(), 0)),
+        im.TransformIndexToPhysicalPoint((0, 0, im.GetDepth())),
+        im.TransformIndexToPhysicalPoint((im.GetWidth(), 0, im.GetDepth())),
+        im.TransformIndexToPhysicalPoint((im.GetWidth(), im.GetHeight(), im.GetDepth())),
+        im.TransformIndexToPhysicalPoint((0, im.GetHeight(), im.GetDepth())),
+    ]
+
+    extreme_points_transformed = [inverse.TransformPoint(pnt) for pnt in extreme_points]
+
+    min_x = min(extreme_points_transformed)[0]
+    min_y = min(extreme_points_transformed, key=lambda p: p[1])[1]
+    min_z = min(extreme_points_transformed, key=lambda p: p[2])[2]
+    # max_x = max(extreme_points_transformed)[0]
+    # max_y = max(extreme_points_transformed, key=lambda p: p[1])[1]
+    # max_z = max(extreme_points_transformed, key=lambda p: p[2])[2]
+
+    nw_direction = np.eye(3).flatten()
+    nw_ori = [min_x, min_y, min_z]
+
+    im_sax = sitk.Resample(im, sax_size, transform, sitk.sitkLinear, nw_ori, reference_spacing, nw_direction,
+                           int(default_pixel_value))
+    im_sax.SetOrigin(transform.TransformPoint(nw_ori))
+
+    old_direction = np.array(im_sax.GetDirection()).reshape((3, 3))
+    new_direction = []
+    for cosine in old_direction:
+        new_cosine = inverse.TransformVector(cosine, [0, 0, 0])
+        new_direction.extend(new_cosine)
+    im_sax.SetDirection(new_direction)
+
+    return im_sax
+
+
+
+def reformat_mask_to_sax(input_mask, ref_sax, r_sax_filename, world_coordinates):     # ref_sax = im_sax
     """ Reformat given BINARY (0,1) mask to sax. First change to 0-255 mask to avoid interpolation problems, and go
     back to 0-1 after reformatting. Get image parameters from corresponding ref_sax = ct1-sax-iso.mha for example """
 
@@ -677,7 +728,13 @@ def reformat_mask_to_sax(input_mask, ref_sax, r_sax_filename):     # ref_sax = i
     reference_center = np.array(reference_image.TransformContinuousIndexToPhysicalPoint(
         np.array(reference_image.GetSize()) / 2.0))  # geometrical center (coordinates)
 
-    mask_255_sax = get_sax_view(mask_255, reference_image, reference_origin, reference_center, R,
+
+    if world_coordinates:
+        mask_255_sax = get_sax_view_wcoordinates(mask_255, R, ref_sax.GetSize(), ref_sax.GetSpacing(),
+                                                 default_pixel_value=0)
+
+    else:
+        mask_255_sax = get_sax_view(mask_255, reference_image, reference_origin, reference_center, R,
                                  default_pixel_value=0)
     # go back to [0, 1] mask
     mask_sax = sitk.BinaryThreshold(mask_255_sax, lowerThreshold=128, upperThreshold=255, insideValue=1, outsideValue=0)
@@ -757,3 +814,21 @@ def do_lv_lax_qc(prefix_path, lvendo_filename, lvwall_filename, rvepi_filename, 
     os.remove(lvwall_mesh_filename2)
     os.remove(rvepi_mesh_filename)
     os.remove(rvepi_mesh_filename2)
+
+
+def cartesian_to_polar(x, y):
+    r = np.sqrt(x**2 + y**2)
+    theta = np.arctan2(y, x)
+    return r, theta
+
+
+def check_360(thetas, tolerance=0.10):
+    output = True
+    ref_array = np.arange(-np.pi, np.pi, 2*np.pi/360)
+    for i in range(len(ref_array)):
+        # find closest value in thetas
+        idx = (np.abs(thetas - ref_array[i])).argmin()
+        val = thetas[idx]
+        if np.abs(val-ref_array[i]) > tolerance:
+            output = False
+    return output
