@@ -23,8 +23,6 @@ import argparse
 import time
 
 
-dilate_wall = True
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', type=str, metavar='PATH', help='Data path')
 parser.add_argument('--mask_lvendo_sax', type=str, help='Input LV endo mask name')
@@ -32,6 +30,9 @@ parser.add_argument('--mask_lvwall_sax', type=str, help='Input LV wall mask name
 parser.add_argument('--mask_rvepi_sax', type=str, help='Input RV epi mask name')
 parser.add_argument('--mask_lvepi_sax', type=str, help='Input LV epi mask name')
 args = parser.parse_args()
+
+
+dilate_wall = True       # set to False if you don't plan to probe a mesh to get AHA labels on its surface. Faster.
 
 t = time.time()
 
