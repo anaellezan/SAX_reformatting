@@ -20,6 +20,7 @@ python compute_17_aha_segments_LVwall.py --path example_pat0/ --mask_lvendo_sax 
 from aux_functions import *
 import numpy as np
 import argparse
+import time
 
 
 dilate_wall = True
@@ -32,6 +33,7 @@ parser.add_argument('--mask_rvepi_sax', type=str, help='Input RV epi mask name')
 parser.add_argument('--mask_lvepi_sax', type=str, help='Input LV epi mask name')
 args = parser.parse_args()
 
+t = time.time()
 
 # inputs
 lvendo_sax_filename = args.path + args.mask_lvendo_sax
@@ -237,3 +239,5 @@ if dilate_wall:
                                lvwall_mask.GetDirection(),
                                sitk.sitkUInt8, name=patient_name, study_description='LV wall dil', series_description='aha')
     sitk.WriteImage(aha_wall_dil, lvwall_aha_dil_filename)
+
+print('Elapsed time: ', time.time() - t)

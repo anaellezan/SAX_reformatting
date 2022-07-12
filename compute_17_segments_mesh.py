@@ -9,7 +9,7 @@ python compute_17_segments_mesh.py --path example_pat0/ --ct_mask ct-lvepi-sax.m
 """
 
 from aux_functions import *
-import argparse
+import argparse, time
 
 def read_mhaimage(filename):
     """Read .mha file"""
@@ -25,6 +25,7 @@ parser.add_argument('--ct_mask', type=str, help='Input mask. I will compute a me
 parser.add_argument('--ct_lvwall_labels_mask', type=str, help='Input LV wall mask with labels')
 args = parser.parse_args()
 
+t = time.time()
 
 # Input filenames
 mask_input_filename = args.path + args.ct_mask     # I will create and parcellate the epi mesh as example case
@@ -170,3 +171,5 @@ except:
 mesh.GetPointData().RemoveArray('longitudinal')
 
 writevtk(mesh, mesh_output_filename)
+
+print('Elapsed time: ', time.time() - t)
