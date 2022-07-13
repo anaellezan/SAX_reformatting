@@ -35,6 +35,12 @@ A couple of additional functionalities are also included:
 - 17-AHA LV wall parcellation computation (compute_17_aha_segments_LVwall.py). The division is done according to the ["official" definition](https://www.pmod.com/files/download/v34/doc/pcardp/3615.htm), notably, taking into account that "only slices containing myocardium in all 360° are included", i.e. part of the base is excluded.  
 - 17 regions LV mesh parcellation computation (compute_17_segments_mesh.py). Given a LV wall segmentation and corresponding mesh (endo, epi, midwall etc) compute 17-AHA segmentation projecting the division on the LV wall image to the mesh. Additionally compute alternative parcellation directly on the mesh (17 regions but not 17-AHA since this one fully includes the basal region).
 
+## Important note on data display
+A few reformatted images may show problems when displayed by some tools (i.e. ITK-SNAP error message: Failed to load image (...). Image has an invalid orientation (code XYZ)).
+In those cases, images can be displayed using 3D Slicer, for instance, ticking the option "Ignore Orientation". Still the XYZ axes may be displayed in an odd manner (views can appear flipped). The orientation can be manually set to an easier-to-display one by using the code in workaround_visualization_issue.py but, importantly, the matching world coordinates with initial TA image will be lost (not relevant in most situations...).
+Not sure if it is worthy to by default apply the workaround to all cases since this issue does not happen very often.
+
+
 
 ## Code
 [Python](https://www.python.org/)
@@ -94,8 +100,6 @@ python compute_17_aha_segments_LVwall.py --path example_pat0/ --mask_lvendo_sax 
 python compute_17_segments_mesh.py --path example_pat0/ --ct_mask ct-lvepi-sax.mha --ct_lvwall_labels_mask ct-lvwall-sax-dil-aha.mha
 
 ```
-
-
 
 ## License
 The code in this repository is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
