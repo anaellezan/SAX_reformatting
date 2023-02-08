@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sax_reformatting"
+version = "0.0.1"
+authors = [
+  { name="Nunez-garcia Marta", email="marta.nunez-garcia@inria.fr" },
+]
+description = "Package enabling to reformat transaxial images to short axis."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "SimpleITK==2.2.1",
+  "vtk==9.2.5",
+  "pyvista==0.37.0",
+  "pyacvd==0.2.9",
+  "torch==1.13.1",
+  "torchinfo==1.7.2",
+  "tqdm==4.64.1",
+  "pandas==1.5.3",
+  "sklearn==0.0.post1",
+  "scikit-learn==1.2.1",
+  "scipy==1.10.0",
+  "matplotlib==3.6.3",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/martanunez/SAX_reformatting"
+"Bug Tracker" = "https://github.com/martanunez/SAX_reformatting/issues"

@@ -67,6 +67,15 @@ git clone https://github.com/martanunez/SAX_reformatting
 cd SAX_reformatting
 ```
 
+
+Install the package sax_reformatting:
+```
+pip install -r requirements.txt
+python3 -m pip install --upgrade build
+python3 -m build
+python -m pip install .
+```
+
 ## Usage
 ```
 python main.py  [-h] [--path PATH] [--ct_im FILENAME] 
